@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Send, 
   Paperclip, 
@@ -60,7 +60,7 @@ export default function ChatWindow({ user, selectedRoom, isSidebarOpen, onToggle
         }
       };
     }
-  }, [selectedRoom, isConnected, joinRoom, leaveRoom]);
+  }, [selectedRoom, isConnected, joinRoom, leaveRoom, fetchMessages]);
   
   // Listen for new messages
   useEffect(() => {
@@ -120,7 +120,7 @@ export default function ChatWindow({ user, selectedRoom, isSidebarOpen, onToggle
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (!selectedRoom) return;
     
     setIsLoading(true);
@@ -135,7 +135,7 @@ export default function ChatWindow({ user, selectedRoom, isSidebarOpen, onToggle
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedRoom]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();

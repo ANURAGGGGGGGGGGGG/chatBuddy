@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { MoreVertical, Reply, Smile, Copy, Trash2 } from 'lucide-react';
+import Image from 'next/image';
 
 export default function MessageBubble({ message, isOwn, showAvatar }) {
   const [showActions, setShowActions] = useState(false);
@@ -103,11 +104,17 @@ export default function MessageBubble({ message, isOwn, showAvatar }) {
                 <p className="whitespace-pre-wrap">{message.content}</p>
               ) : message.type === 'image' ? (
                 <div>
-                  <img 
-                    src={message.attachment?.url} 
-                    alt={message.attachment?.originalName}
-                    className="max-w-full h-auto rounded-lg mb-2 border border-white/10"
-                  />
+                  {message.attachment?.url ? (
+                    <Image
+                      src={message.attachment.url}
+                      alt={message.attachment?.originalName || 'Shared image'}
+                      width={800}
+                      height={600}
+                      sizes="(max-width: 768px) 100vw, 600px"
+                      className="max-w-full h-auto rounded-lg mb-2 border border-white/10"
+                      unoptimized
+                    />
+                  ) : null}
                   {message.content && <p>{message.content}</p>}
                 </div>
               ) : message.type === 'file' ? (

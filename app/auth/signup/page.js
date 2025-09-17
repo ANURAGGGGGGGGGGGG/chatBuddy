@@ -132,7 +132,7 @@ export default function SignUp() {
                   </div>
                 </div>
                 <h2 className="text-2xl font-bold">Create your account</h2>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">It's fast, secure, and free</p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">It&apos;s fast, secure, and free</p>
               </div>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-5">

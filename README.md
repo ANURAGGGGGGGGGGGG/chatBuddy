@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# ChatBuddy
+
+A real‑time chat application built with Next.js App Router, NextAuth (credentials), MongoDB/Mongoose, and Socket.IO. It supports rooms, presence/typing indicators, reactions, file/image attachments, and an emoji picker.
+
+## Features
+- Authentication with credentials (signup/signin)
+- Private/public rooms with membership checks
+- Real‑time messaging via Socket.IO
+- Optimistic send, read receipts, typing indicators, user presence
+- Reactions and message updates (edit/delete flags)
+- File and image attachments
+- Emoji picker in the composer
+
+## Tech Stack
+- Next.js 15, React 19
+- MongoDB + Mongoose
+- NextAuth with MongoDB adapter
+- Socket.IO (server & client)
+- Tailwind CSS (v4) and Headless UI
+
+## Prerequisites
+- Node.js 18+ and npm
+- A MongoDB connection string
 
 ## Getting Started
+1) Install dependencies
 
-First, run the development server:
+   npm install
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2) Create .env.local at the project root with:
+- MONGODB_URI=your-mongodb-connection-string
+- NEXTAUTH_SECRET=any-strong-random-string
+- NEXTAUTH_URL=http://localhost:3000
+- PORT=3000
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Notes:
+- Server reads .env.local (see server.js) and uses NEXTAUTH_SECRET to verify Socket.IO auth tokens.
+- CORS origin for Socket.IO uses NEXTAUTH_URL.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+3) Run the app in development
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   npm run dev
 
-## Learn More
+Open http://localhost:3000/chat
 
-To learn more about Next.js, take a look at the following resources:
+4) Create an account and sign in
+- Visit /auth/signup to register, then /auth/signin to log in.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Build & Start (production)
+- Build: npm run build
+- Start: npm run start
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Ensure NEXTAUTH_URL points to your deployed URL and the same NEXTAUTH_SECRET is set in the environment.
 
-## Deploy on Vercel
+## Project Structure (high level)
+- app/ – App Router pages and API routes (auth, messages, rooms)
+- components/ – Chat UI (ChatWindow, ChatSidebar, MessageBubble, FileUploadDialog)
+- contexts/ – SocketContext for realtime events
+- models/ – Mongoose models (User, Room, Message)
+- lib/mongodb.js – DB connection helper
+- server.js – Next + Socket.IO server bootstrap
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Troubleshooting
+- Stuck on “Reconnecting…”: confirm NEXTAUTH_URL is correct and matches the origin you open in the browser. Also ensure NEXTAUTH_SECRET in env matches the one used to sign JWTs.
+- 401/403 on messages API: verify you are a room member and your session is valid.
+- Mongo errors: check MONGODB_URI and that MongoDB is reachable.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+MIT (or your preferred license).

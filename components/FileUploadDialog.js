@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Upload, File, Image, Video } from 'lucide-react';
+import { X, Upload, File, Image as ImageIcon, Video } from 'lucide-react';
 
 export default function FileUploadDialog({ onClose, onUpload }) {
   const [dragActive, setDragActive] = useState(false);
@@ -61,7 +61,7 @@ export default function FileUploadDialog({ onClose, onUpload }) {
           >
             <div className="space-y-4">
               <div className="flex justify-center">
-                <Upload className="h-12 w-12 text-gray-400" />
+                <Upload className="h-12 w-12 text-gray-400" aria-hidden="true" />
               </div>
               
               <div>
@@ -92,19 +92,19 @@ export default function FileUploadDialog({ onClose, onUpload }) {
             <div className="flex justify-center space-x-6">
               <div className="text-center">
                 <div className="bg-blue-100 p-3 rounded-lg mb-2">
-                  <Image className="h-6 w-6 text-blue-600 mx-auto" />
+                  <ImageIcon className="h-6 w-6 text-blue-600 mx-auto" aria-hidden="true" />
                 </div>
                 <p className="text-xs text-gray-600">Images</p>
               </div>
               <div className="text-center">
                 <div className="bg-green-100 p-3 rounded-lg mb-2">
-                  <File className="h-6 w-6 text-green-600 mx-auto" />
+                  <File className="h-6 w-6 text-green-600 mx-auto" aria-hidden="true" />
                 </div>
                 <p className="text-xs text-gray-600">Documents</p>
               </div>
               <div className="text-center">
                 <div className="bg-purple-100 p-3 rounded-lg mb-2">
-                  <Video className="h-6 w-6 text-purple-600 mx-auto" />
+                  <Video className="h-6 w-6 text-purple-600 mx-auto" aria-hidden="true" />
                 </div>
                 <p className="text-xs text-gray-600">Videos</p>
               </div>
