@@ -44,6 +44,24 @@ export default function ChatWindow({ user, selectedRoom, isSidebarOpen, onToggle
     markMessagesAsRead
   } = useSocket();
 
+  // Define fetchMessages BEFORE any effect that references it to avoid TDZ in production
+  const fetchMessages = useCallback(async () => {
+    if (!selectedRoom) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/messages?roomId=${selectedRoom._id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data.messages || []);
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedRoom]);
+
   useEffect(() => {
     if (selectedRoom) {
       fetchMessages();
@@ -119,23 +137,6 @@ export default function ChatWindow({ user, selectedRoom, isSidebarOpen, onToggle
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
-  const fetchMessages = useCallback(async () => {
-    if (!selectedRoom) return;
-    
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/messages?roomId=${selectedRoom._id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data.messages || []);
-      }
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedRoom]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
