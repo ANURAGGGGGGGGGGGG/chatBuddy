@@ -100,13 +100,18 @@ export default async function Home() {
                     <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500" />
                     <div>
                       <p className="text-xs text-slate-500">sam • just now</p>
-                      <div className="mt-1 rounded-2xl rounded-tl-sm bg-slate-100 dark:bg:white/10 px-3 py-2 text-sm">Typing…</div>
+                      <div className="mt-1 rounded-2xl rounded-tl-sm bg-slate-100 dark:bg:white/10 px-3 py-2 text-sm text-black
+                      ">Typing…</div>
                     </div>
                   </div>
                 </div>
                 <div className="p-3 border-t border-black/5 dark:border-white/10 flex items-center gap-2">
-                  <div className="flex-1 rounded-xl bg-slate-100 dark:bg:white/10 h-9" />
-                  <div className="h-9 w-9 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-black grid place-items-center text-xs">Send</div>
+                  <input
+                    type="text"
+                    placeholder="Send a message"
+                    aria-label="Message input"
+                    className="flex-1 rounded-xl bg-slate-100 dark:bg-white/10 h-9 px-3 text-black dark:text-white placeholder-slate-500 dark:placeholder-slate-300 outline-none border border-black/5 dark:border-white/10"
+                  />
                 </div>
               </div>
             </div>

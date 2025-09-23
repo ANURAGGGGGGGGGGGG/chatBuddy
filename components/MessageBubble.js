@@ -83,7 +83,7 @@ export default function MessageBubble({ message, isOwn, showAvatar }) {
             className={`relative px-4 py-2 rounded-2xl shadow-sm ${
               isOwn
                 ? 'bg-sky-600/90 text-white rounded-br-md'
-                : 'bg-white/10 text-slate-100 border border-white/10 rounded-bl-md backdrop-blur'
+                : 'bg-white/10 text-black border border-white/10 rounded-bl-md backdrop-blur'
             }`}
           >
             {/* Reply indicator */}
@@ -101,7 +101,7 @@ export default function MessageBubble({ message, isOwn, showAvatar }) {
             {/* Message content */}
             <div className="break-words">
               {message.type === 'text' ? (
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                <p className="whitespace-pre-wrap text-black">{message.content}</p>
               ) : message.type === 'image' ? (
                 <div>
                   {message.attachment?.url ? (
@@ -115,17 +115,17 @@ export default function MessageBubble({ message, isOwn, showAvatar }) {
                       unoptimized
                     />
                   ) : null}
-                  {message.content && <p>{message.content}</p>}
+                  {message.content && <p className="text-black">{message.content}</p>}
                 </div>
               ) : message.type === 'file' ? (
                 <div className="flex items-center space-x-2">
                   <div className="bg-white/5 p-2 rounded border border-white/10">
-                    <span className="text-sm font-medium text-slate-100">{message.attachment?.originalName}</span>
+                    <span className="text-sm font-medium text-black">{message.attachment?.originalName}</span>
                   </div>
-                  {message.content && <p>{message.content}</p>}
+                  {message.content && <p className="text-black">{message.content}</p>}
                 </div>
               ) : (
-                <p className="italic text-slate-300">{message.content}</p>
+                <p className="italic text-black">{message.content}</p>
               )}
             </div>
 
@@ -163,7 +163,7 @@ export default function MessageBubble({ message, isOwn, showAvatar }) {
 
             {/* Timestamp */}
             <p className={`text-[10px] mt-1 ${
-              isOwn ? 'text-sky-100/90' : 'text-slate-300'
+              isOwn ? 'text-sky-100/90' : 'text-slate-700'
             }`}>
               {formatTime(message.createdAt)}
               {message.isEdited && ' (edited)'}
