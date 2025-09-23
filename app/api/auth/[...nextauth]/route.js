@@ -4,6 +4,7 @@ import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import { MongoClient } from 'mongodb';
 import connectDB from '../../../../lib/mongodb';
 import User from '../../../../models/User';
+import jwt from 'jsonwebtoken';
 
 const client = new MongoClient(process.env.MONGODB_URI);
 const clientPromise = client.connect();
@@ -68,6 +69,19 @@ const authOptions = {
       if (user) {
         token.id = user.id;
         token.avatar = user.avatar;
+        token.email = user.email;
+      }
+      // Issue a short-lived access token for Socket.IO auth
+      try {
+        if (token?.id && token?.email) {
+          token.accessToken = jwt.sign(
+            { sub: token.id, email: token.email },
+            process.env.NEXTAUTH_SECRET,
+            { expiresIn: '7d' }
+          );
+        }
+      } catch (e) {
+        console.error('JWT sign error:', e);
       }
       return token;
     },
@@ -75,6 +89,7 @@ const authOptions = {
       if (token) {
         session.user.id = token.id;
         session.user.avatar = token.avatar;
+        session.accessToken = token.accessToken;
       }
       return session;
     },

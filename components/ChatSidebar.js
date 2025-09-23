@@ -11,13 +11,16 @@ import {
   Users, 
   Hash,
   ChevronLeft,
-  MoreVertical
+  MoreVertical,
+  Globe
 } from 'lucide-react';
 
 export default function ChatSidebar({ user, selectedRoom, onRoomSelect, onToggleSidebar }) {
   const [rooms, setRooms] = useState([]);
+  const [publicRooms, setPublicRooms] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingPublic, setLoadingPublic] = useState(false);
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [compactSidebar, setCompactSidebar] = useState(false);
@@ -32,7 +35,23 @@ export default function ChatSidebar({ user, selectedRoom, onRoomSelect, onToggle
 
   useEffect(() => {
     fetchRooms();
+    fetchPublicRooms();
   }, []);
+
+  const fetchPublicRooms = async () => {
+    setLoadingPublic(true);
+    try {
+      const res = await fetch('/api/rooms/public');
+      if (res.ok) {
+        const data = await res.json();
+        setPublicRooms(data.rooms || []);
+      }
+    } catch (e) {
+      console.error('Error fetching public rooms:', e);
+    } finally {
+      setLoadingPublic(false);
+    }
+  };
 
   // Load preferences
   useEffect(() => {
@@ -65,9 +84,38 @@ export default function ChatSidebar({ user, selectedRoom, onRoomSelect, onToggle
     }
   };
 
+  const joinPublicRoom = async (roomId) => {
+    try {
+      const res = await fetch('/api/rooms/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.error('Join room failed:', data?.error || 'Unknown error');
+        return;
+      }
+      const joined = data.room;
+      // Update lists
+      setRooms((prev) => {
+        const exists = prev.some(r => r._id === joined._id);
+        return exists ? prev : [joined, ...prev];
+      });
+      setPublicRooms((prev) => prev.filter(r => r._id !== joined._id));
+      onRoomSelect?.(joined);
+    } catch (e) {
+      console.error('Join public room error:', e);
+    }
+  };
+
   const filteredRooms = rooms.filter(room => 
     room.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const filteredPublicRooms = publicRooms
+    .filter(pr => !rooms.some(r => r._id === pr._id))
+    .filter(room => room.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const handleSignOut = () => {
     signOut({ callbackUrl: '/auth/signin' });
@@ -260,6 +308,60 @@ export default function ChatSidebar({ user, selectedRoom, onRoomSelect, onToggle
               ))}
             </div>
           )}
+
+          {/* Public Rooms Section */}
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-2">
+                <Globe className="h-3.5 w-3.5 text-slate-400" /> Public Rooms
+              </h2>
+              <button
+                onClick={fetchPublicRooms}
+                className="text-xs text-slate-400 hover:text-slate-200"
+              >
+                Refresh
+              </button>
+            </div>
+
+            {loadingPublic ? (
+              <div className="space-y-2">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-10 bg-white/10 border border-white/10 rounded-lg animate-pulse"></div>
+                ))}
+              </div>
+            ) : filteredPublicRooms.length === 0 ? (
+              <p className="text-slate-500 text-xs">No public rooms available</p>
+            ) : (
+              <div className="space-y-1">
+                {filteredPublicRooms.map((room) => (
+                  <div
+                    key={room._id}
+                    className={`w-full flex items-center space-x-3 ${itemPadding} rounded-lg text-left transition-colors border border-transparent hover:bg-white/5 hover:border-white/10`}
+                  >
+                    <div className="flex-shrink-0">
+                      <div className={`bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center justify-center ${iconSize}`}>
+                        <Hash className="h-4 w-4 text-amber-400" />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`${nameTextSize} font-medium text-slate-200 truncate`}>
+                        {room.name}
+                      </p>
+                      <p className={`${metaTextSize} text-slate-400 truncate`}>
+                        Public · {room.members?.length || 0} members
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => joinPublicRoom(room._id)}
+                      className="px-2 py-1 text-xs rounded-md bg-amber-500/20 border border-amber-500/30 text-amber-300 hover:bg-amber-500/30"
+                    >
+                      Join
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -402,61 +504,50 @@ export default function ChatSidebar({ user, selectedRoom, onRoomSelect, onToggle
 
             <form onSubmit={handleCreateRoom} className="p-5 space-y-5">
               <div>
-                <label htmlFor="room-name" className="block text-sm font-medium text-slate-200">Room name</label>
+                <label htmlFor="room-name" className="block text-sm font-medium mb-1">Room name</label>
                 <input
                   id="room-name"
                   ref={createNameInputRef}
                   type="text"
                   value={newRoomName}
                   onChange={(e) => setNewRoomName(e.target.value)}
-                  placeholder="e.g. general, design, team-frontend"
-                  className="mt-1 w-full rounded-lg bg-white/5 border border-white/10 text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500/40 px-3 py-2"
-                  maxLength={100}
-                  required
+                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500/40"
                 />
-                <p className="mt-1 text-xs text-slate-400">Max 100 characters</p>
               </div>
 
               <div>
-                <label htmlFor="room-description" className="block text-sm font-medium text-slate-200">Description (optional)</label>
+                <label htmlFor="room-description" className="block text-sm font-medium mb-1">Description (optional)</label>
                 <textarea
                   id="room-description"
                   value={newRoomDescription}
                   onChange={(e) => setNewRoomDescription(e.target.value)}
-                  placeholder="What is this room about?"
-                  className="mt-1 w-full rounded-lg bg-white/5 border border-white/10 text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500/40 px-3 py-2"
+                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-500/40"
                   rows={3}
-                  maxLength={500}
                 />
-                <p className="mt-1 text-xs text-slate-400">Up to 500 characters</p>
               </div>
 
               <div>
-                <p className="block text-sm font-medium text-slate-200 mb-2">Room type</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <label className={`rounded-lg border px-3 py-2 cursor-pointer ${newRoomType === 'public' ? 'border-sky-500/50 bg-sky-500/10' : 'border-white/10 bg-white/5'}`}>
+                <label className="block text-sm font-medium mb-1">Room type</label>
+                <div className="flex items-center gap-3">
+                  <label className="inline-flex items-center gap-2">
                     <input
                       type="radio"
                       name="room-type"
                       value="public"
                       checked={newRoomType === 'public'}
                       onChange={() => setNewRoomType('public')}
-                      className="sr-only"
                     />
-                    <span className="text-sm font-medium">Public</span>
-                    <p className="text-xs text-slate-400">Visible to members in your workspace</p>
+                    <span className="text-sm">Public</span>
                   </label>
-                  <label className={`rounded-lg border px-3 py-2 cursor-pointer ${newRoomType === 'private' ? 'border-sky-500/50 bg-sky-500/10' : 'border-white/10 bg-white/5'}`}>
+                  <label className="inline-flex items-center gap-2">
                     <input
                       type="radio"
                       name="room-type"
                       value="private"
                       checked={newRoomType === 'private'}
                       onChange={() => setNewRoomType('private')}
-                      className="sr-only"
                     />
-                    <span className="text-sm font-medium">Private</span>
-                    <p className="text-xs text-slate-400">Only invited members can see and join</p>
+                    <span className="text-sm">Private</span>
                   </label>
                 </div>
               </div>
@@ -471,7 +562,7 @@ export default function ChatSidebar({ user, selectedRoom, onRoomSelect, onToggle
                 <button
                   type="button"
                   onClick={() => { setShowCreateRoom(false); resetCreateRoomForm(); }}
-                  className="px-4 py-2 text-slate-300 hover:text-white"
+                  className="px-3 py-2 rounded-md text-slate-300 hover:text-white"
                 >
                   Cancel
                 </button>
